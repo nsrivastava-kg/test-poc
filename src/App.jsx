@@ -18,7 +18,34 @@ import {
   Table,
   Text,
   Title,
+  Tooltip,
 } from '@mantine/core'
+import {
+  IconBell,
+  IconChevronDown,
+  IconChevronLeft,
+  IconChevronRight,
+  IconCirclesRelation,
+  IconClipboardText,
+  IconDashboard,
+  IconDatabase,
+  IconDotsVertical,
+  IconFileText,
+  IconMessageCircleQuestion,
+  IconNotes,
+  IconRefresh,
+  IconSearch,
+  IconSettings,
+  IconShield,
+  IconSparkles,
+  IconTestPipe,
+  IconTruckDelivery,
+  IconUsers,
+} from '@tabler/icons-react'
+import { Link, Route, Routes } from 'react-router-dom'
+import { useState } from 'react'
+import reactLogo from './assets/react.svg'
+import viteLogo from '/vite.svg'
 
 // Small, inline helper components (keep everything in one file per requirements)
 function HeaderStat({ label, value }) {
@@ -46,20 +73,49 @@ function Section({ title, right, children }) {
   )
 }
 
-function App() {
+function HomePage() {
+  // Keep the App page content same as before (Vite starter screen)
+  const [count, setCount] = useState(0)
+
+  return (
+    <div className="homeRoot">
+      <div>
+        <a href="https://vite.dev" target="_blank" rel="noreferrer">
+          <img src={viteLogo} className="logo" alt="Vite logo" />
+        </a>
+        <a href="https://react.dev" target="_blank" rel="noreferrer">
+          <img src={reactLogo} className="logo react" alt="React logo" />
+        </a>
+      </div>
+      <h1>Vite + React</h1>
+      <div className="card">
+        <button onClick={() => setCount((c) => c + 1)}>count is {count}</button>
+        <p>
+          Edit <code>src/App.jsx</code> and save to test HMR
+        </p>
+        <p>
+          Visit <Link to="/risks">/risks</Link> to view the Risk Details screen.
+        </p>
+      </div>
+      <p className="read-the-docs">Click on the Vite and React logos to learn more</p>
+    </div>
+  )
+}
+
+function RiskDetailsScreen() {
   // Mock data only (no backend)
   const sidebar = [
-    { label: 'Dashboard' },
-    { label: 'Engagement Details' },
-    { label: 'Action Items' },
-    { label: 'Docs & Data' },
-    { label: 'Questionnaires' },
-    { label: 'Internal Meetings' },
-    { label: 'Risks', active: true },
-    { label: 'Controls' },
-    { label: 'Reflect & Standback' },
-    { label: 'Tests' },
-    { label: 'Delivery' },
+    { label: 'Dashboard', icon: IconDashboard },
+    { label: 'Engagement Details', icon: IconUsers },
+    { label: 'Action Items', icon: IconNotes },
+    { label: 'Docs & Data', icon: IconDatabase },
+    { label: 'Questionnaires', icon: IconMessageCircleQuestion },
+    { label: 'Internal Meetings', icon: IconClipboardText },
+    { label: 'Risks', active: true, icon: IconShield },
+    { label: 'Controls', icon: IconSettings },
+    { label: 'Reflect & Standback', icon: IconFileText },
+    { label: 'Tests', icon: IconTestPipe },
+    { label: 'Delivery', icon: IconTruckDelivery },
   ]
 
   const risk = {
@@ -82,11 +138,15 @@ function App() {
     businessProcesses: ['Revenue / Order-to-Cash (O2C)', 'Procure-to-Pay (P2P)'],
   }
 
+  // Collapsible side nav: expanded shows icons + labels, collapsed shows only icons
+  const [navCollapsed, setNavCollapsed] = useState(false)
+  const navbarWidth = navCollapsed ? 76 : 260
+
   return (
     <AppShell
       padding="md"
       header={{ height: 64 }}
-      navbar={{ width: 260, breakpoint: 'sm' }}
+      navbar={{ width: navbarWidth, breakpoint: 'sm' }}
     >
       {/* Top header bar (product + metadata) */}
       <AppShell.Header>
@@ -123,9 +183,9 @@ function App() {
               <Text size="sm" fw={600}>
                 Catalyst Audit 2024
               </Text>
-              <Badge color="gray" variant="light" radius="sm">
-                ▾
-              </Badge>
+              <ActionIcon variant="subtle" color="gray" aria-label="Select engagement">
+                <IconChevronDown size={16} />
+              </ActionIcon>
             </Group>
 
             <Divider orientation="vertical" />
@@ -138,11 +198,16 @@ function App() {
           </Group>
 
           <Group gap="sm">
-            <Button variant="light" color="gray" size="xs">
+            <Button
+              variant="light"
+              color="gray"
+              size="xs"
+              leftSection={<IconSparkles size={16} />}
+            >
               AI Companion
             </Button>
             <ActionIcon variant="subtle" color="gray" aria-label="Notifications">
-              <Text size="sm">🔔</Text>
+              <IconBell size={18} />
             </ActionIcon>
             <Avatar size={28} radius="xl">
               NS
@@ -155,13 +220,39 @@ function App() {
       <AppShell.Navbar p="xs">
         <ScrollArea h="100%" offsetScrollbars>
           <Stack gap="xs">
+            {/* Sidebar collapse control */}
+            <Group justify={navCollapsed ? 'center' : 'space-between'} mb="xs">
+              {!navCollapsed && (
+                <Text size="xs" fw={600} c="dimmed">
+                  Navigation
+                </Text>
+              )}
+              <Tooltip label={navCollapsed ? 'Expand' : 'Collapse'} position="right">
+                <ActionIcon
+                  variant="light"
+                  aria-label={navCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                  onClick={() => setNavCollapsed((v) => !v)}
+                >
+                  {navCollapsed ? <IconChevronRight size={18} /> : <IconChevronLeft size={18} />}
+                </ActionIcon>
+              </Tooltip>
+            </Group>
+
             {sidebar.map((item) => (
-              <NavLink
+              <Tooltip
                 key={item.label}
-                label={item.label}
-                active={item.active}
-                variant="subtle"
-              />
+                label={navCollapsed ? item.label : undefined}
+                position="right"
+                disabled={!navCollapsed}
+              >
+                <NavLink
+                  label={navCollapsed ? null : item.label}
+                  active={item.active}
+                  variant="subtle"
+                  leftSection={<item.icon size={18} />}
+                  style={navCollapsed ? { justifyContent: 'center' } : undefined}
+                />
+              </Tooltip>
             ))}
           </Stack>
         </ScrollArea>
@@ -198,7 +289,7 @@ function App() {
                 Edit
               </Button>
               <ActionIcon variant="light" aria-label="More actions">
-                <Text>⋮</Text>
+                <IconDotsVertical size={18} />
               </ActionIcon>
             </Group>
           </Group>
@@ -333,7 +424,10 @@ function App() {
                   <Accordion variant="separated" radius="md" defaultValue={null}>
                     <Accordion.Item value="linked">
                       <Accordion.Control>
-                        <Text fw={600}>Linked Items</Text>
+                        <Group gap="xs">
+                          <IconCirclesRelation size={18} />
+                          <Text fw={600}>Linked Items</Text>
+                        </Group>
                       </Accordion.Control>
                       <Accordion.Panel>
                         <Stack gap="xs">
@@ -351,7 +445,10 @@ function App() {
 
                     <Accordion.Item value="evaluation">
                       <Accordion.Control>
-                        <Text fw={600}>Evaluation and Conclusion</Text>
+                        <Group gap="xs">
+                          <IconFileText size={18} />
+                          <Text fw={600}>Evaluation and Conclusion</Text>
+                        </Group>
                       </Accordion.Control>
                       <Accordion.Panel>
                         <Text size="sm" c="dimmed">
@@ -362,7 +459,10 @@ function App() {
 
                     <Accordion.Item value="strategy">
                       <Accordion.Control>
-                        <Text fw={600}>Strategy</Text>
+                        <Group gap="xs">
+                          <IconShield size={18} />
+                          <Text fw={600}>Strategy</Text>
+                        </Group>
                       </Accordion.Control>
                       <Accordion.Panel>
                         <Stack gap="xs">
@@ -390,13 +490,13 @@ function App() {
                 <Paper withBorder radius="md" p="xs">
                   <Stack gap="xs" align="flex-end">
                     <ActionIcon variant="light" aria-label="Expand">
-                      <Text>»</Text>
+                      <IconChevronRight size={18} />
                     </ActionIcon>
                     <ActionIcon variant="light" aria-label="Search">
-                      <Text>⌕</Text>
+                      <IconSearch size={18} />
                     </ActionIcon>
                     <ActionIcon variant="light" aria-label="Refresh">
-                      <Text>⟳</Text>
+                      <IconRefresh size={18} />
                     </ActionIcon>
                   </Stack>
                 </Paper>
@@ -409,4 +509,14 @@ function App() {
   )
 }
 
-export default App
+export default function App() {
+  return (
+    <Routes>
+      {/* Keep the original App page at root */}
+      <Route path="/" element={<HomePage />} />
+
+      {/* New Risk Details screen */}
+      <Route path="/risks" element={<RiskDetailsScreen />} />
+    </Routes>
+  )
+}
