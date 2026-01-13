@@ -1,5 +1,6 @@
 import {
   AppShell,
+  ActionIcon,
   Avatar,
   Badge,
   Burger,
@@ -134,29 +135,23 @@ export default function Layout({ children }) {
             >
               AI Companion
             </Badge>
-            <Button
-              variant="default"
-              size="xs"
+            <Badge
+              variant="light"
+              color="gray"
               radius="xl"
-              styles={{
-                root: {
-                  background: 'rgba(255,255,255,0.10)',
-                  color: 'white',
-                  borderColor: 'rgba(255,255,255,0.20)',
-                },
-              }}
+              styles={{ label: { color: 'white' } }}
+              style={{ background: 'rgba(255,255,255,0.10)' }}
             >
               ⌘ K
-            </Button>
-            <Button
+            </Badge>
+            <ActionIcon
               variant="subtle"
               color="gray"
-              size="xs"
+              aria-label="Notifications"
               styles={{ root: { color: 'white' } }}
-              leftSection={<IconBell size={16} />}
             >
-              {/* icon only in reference; text omitted intentionally */}
-            </Button>
+              <IconBell size={16} />
+            </ActionIcon>
             <Avatar size={28} radius="xl" />
           </Group>
         </Group>
