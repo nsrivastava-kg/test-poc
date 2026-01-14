@@ -4,12 +4,13 @@ import {
   Avatar,
   Badge,
   Burger,
-  Button,
   Group,
   NavLink,
   ScrollArea,
+  Stack,
   Switch,
   Text,
+  Tooltip,
   UnstyledButton,
   rem,
 } from '@mantine/core'
@@ -40,6 +41,7 @@ import {
  */
 export default function Layout({ children }) {
   const location = useLocation()
+  const searchParams = new URLSearchParams(location.search)
 
   // Mobile burger controls showing/hiding the navbar.
   const [mobileOpened, { toggle: toggleMobile }] = useDisclosure(false)
@@ -48,19 +50,9 @@ export default function Layout({ children }) {
 
   const navWidth = desktopCollapsed ? 72 : 260
 
-  const navItems = [
-    { label: 'Dashboard', icon: IconDashboard, to: '/' },
-    { label: 'Engagement Details', icon: IconUsers, to: '/engagement' },
-    { label: 'Action Items', icon: IconListCheck, to: '/action-items' },
-    { label: 'Docs & Data', icon: IconFileText, to: '/docs' },
-    { label: 'Questionnaires', icon: IconClipboardList, to: '/questionnaires' },
-    { label: 'Internal Meetings', icon: IconStack, to: '/meetings' },
-    { label: 'Risks', icon: IconShield, to: '/risks' },
-    { label: 'Controls', icon: IconGauge, to: '/controls' },
-    { label: 'Reflect & Standback', icon: IconHelp, to: '/reflect' },
-    { label: 'Tests', icon: IconListCheck, to: '/tests' },
-    { label: 'Delivery', icon: IconStack, to: '/delivery' },
-  ]
+  // Helper: simple "startsWith" active matching for grouped routes.
+  const isIn = (prefix) => location.pathname === prefix || location.pathname.startsWith(`${prefix}/`)
+  const selectedTailoringSub = searchParams.get('sub')
 
   return (
     <AppShell
@@ -159,28 +151,18 @@ export default function Layout({ children }) {
 
       <AppShell.Navbar p="sm">
         <ScrollArea h={`calc(100vh - ${rem(60)} - ${rem(16)})`}>
-          {navItems.map((item) => {
-            const active = location.pathname === item.to
-            const Icon = item.icon
-            return (
-              <NavLink
-                key={item.label}
-                component={Link}
-                to={item.to}
-                label={desktopCollapsed ? undefined : item.label}
-                leftSection={<Icon size={18} />}
-                active={active}
-                variant="light"
-                styles={{
-                  root: {
-                    borderRadius: 8,
-                    paddingLeft: desktopCollapsed ? rem(10) : undefined,
-                  },
-                  label: { whiteSpace: 'nowrap' },
-                }}
-              />
-            )
-          })}
+          {/* Sidebar behavior requirements:
+              - Collapsed: icons only (no labels)
+              - Expanded: show labels and dropdown groups (e.g., Questionnaires) */}
+          {desktopCollapsed ? (
+            <StackedIconRail currentPath={location.pathname} />
+          ) : (
+            <StackedExpandedNav
+              currentPath={location.pathname}
+              selectedTailoringSub={selectedTailoringSub}
+              isIn={isIn}
+            />
+          )}
         </ScrollArea>
 
         {/* Footer-ish controls in sidebar */}
@@ -209,5 +191,213 @@ function Kpi({ label, value }) {
         {value}
       </Text>
     </Group>
+  )
+}
+
+/**
+ * Collapsed sidebar: show icon-only buttons for top-level navigation.
+ * This matches the requirement that collapsed state shows icons (and not labels).
+ */
+function StackedIconRail({ currentPath }) {
+  const items = [
+    { label: 'Dashboard', icon: IconDashboard, to: '/' },
+    { label: 'Engagement Details', icon: IconUsers, to: '/engagement' },
+    { label: 'Action Items', icon: IconListCheck, to: '/action-items' },
+    { label: 'Docs & Data', icon: IconFileText, to: '/docs' },
+    // For dropdown groups, route to a sensible default screen.
+    { label: 'Questionnaires', icon: IconClipboardList, to: '/questionnaires/tailoring' },
+    { label: 'Internal Meetings', icon: IconStack, to: '/meetings' },
+    { label: 'Risks', icon: IconShield, to: '/risks' },
+    { label: 'Controls', icon: IconGauge, to: '/controls' },
+    { label: 'Reflect & Standback', icon: IconHelp, to: '/reflect' },
+    { label: 'Tests', icon: IconListCheck, to: '/tests' },
+    { label: 'Delivery', icon: IconStack, to: '/delivery' },
+  ]
+
+  return (
+    <Stack gap={6}>
+      {items.map((it) => {
+        const Icon = it.icon
+        const active = currentPath === it.to || currentPath.startsWith(`${it.to}/`)
+        return (
+          <Tooltip key={it.label} label={it.label} position="right" withArrow>
+            <ActionIcon
+              component={Link}
+              to={it.to}
+              variant={active ? 'light' : 'subtle'}
+              color={active ? 'blue' : 'gray'}
+              size="lg"
+              radius="md"
+              aria-label={it.label}
+            >
+              <Icon size={20} />
+            </ActionIcon>
+          </Tooltip>
+        )
+      })}
+    </Stack>
+  )
+}
+
+/**
+ * Expanded sidebar: show labels and dropdown groups using nested NavLinks.
+ * Questionnaires matches the screenshot: dropdown > Tailoring Questions > sub-items.
+ */
+function StackedExpandedNav({ currentPath, selectedTailoringSub, isIn }) {
+  return (
+    <>
+      <NavLink
+        component={Link}
+        to="/"
+        label="Dashboard"
+        leftSection={<IconDashboard size={18} />}
+        active={currentPath === '/'}
+        variant="light"
+        styles={{ root: { borderRadius: 8 }, label: { whiteSpace: 'nowrap' } }}
+      />
+
+      <NavLink
+        component={Link}
+        to="/engagement"
+        label="Engagement Details"
+        leftSection={<IconUsers size={18} />}
+        active={isIn('/engagement')}
+        variant="light"
+        styles={{ root: { borderRadius: 8 }, label: { whiteSpace: 'nowrap' } }}
+      />
+
+      <NavLink
+        component={Link}
+        to="/action-items"
+        label="Action Items"
+        leftSection={<IconListCheck size={18} />}
+        active={isIn('/action-items')}
+        variant="light"
+        styles={{ root: { borderRadius: 8 }, label: { whiteSpace: 'nowrap' } }}
+      />
+
+      <NavLink
+        component={Link}
+        to="/docs"
+        label="Docs & Data"
+        leftSection={<IconFileText size={18} />}
+        active={isIn('/docs')}
+        variant="light"
+        styles={{ root: { borderRadius: 8 }, label: { whiteSpace: 'nowrap' } }}
+      />
+
+      {/* Dropdown group: Questionnaires */}
+      <NavLink
+        label="Questionnaires"
+        leftSection={<IconClipboardList size={18} />}
+        defaultOpened={isIn('/questionnaires')}
+        active={isIn('/questionnaires')}
+        variant="light"
+        styles={{ root: { borderRadius: 8 }, label: { whiteSpace: 'nowrap' } }}
+      >
+        <NavLink
+          component={Link}
+          to="/questionnaires/tailoring"
+          label="Tailoring Questions"
+          defaultOpened={isIn('/questionnaires/tailoring')}
+          active={isIn('/questionnaires/tailoring')}
+          variant="light"
+          styles={{ root: { borderRadius: 8 } }}
+        >
+          <NavLink
+            component={Link}
+            to="/questionnaires/tailoring?sub=materiality"
+            label="Materiality"
+            active={isIn('/questionnaires/tailoring') && selectedTailoringSub === 'materiality'}
+            variant="light"
+            styles={{ root: { borderRadius: 8 } }}
+          />
+          <NavLink
+            component={Link}
+            to="/questionnaires/tailoring?sub=etd"
+            label="ETD"
+            active={isIn('/questionnaires/tailoring') && selectedTailoringSub === 'etd'}
+            variant="light"
+            styles={{ root: { borderRadius: 8 } }}
+          />
+          <NavLink
+            component={Link}
+            to="/questionnaires/tailoring?sub=lorem-1"
+            label="Lorem ipsum"
+            active={isIn('/questionnaires/tailoring') && selectedTailoringSub === 'lorem-1'}
+            variant="light"
+            styles={{ root: { borderRadius: 8 } }}
+          />
+          <NavLink
+            component={Link}
+            to="/questionnaires/tailoring?sub=lorem-2"
+            label="Lorem ipsum"
+            active={isIn('/questionnaires/tailoring') && selectedTailoringSub === 'lorem-2'}
+            variant="light"
+            styles={{ root: { borderRadius: 8 } }}
+          />
+        </NavLink>
+      </NavLink>
+
+      <NavLink
+        component={Link}
+        to="/meetings"
+        label="Internal Meetings"
+        leftSection={<IconStack size={18} />}
+        active={isIn('/meetings')}
+        variant="light"
+        styles={{ root: { borderRadius: 8 }, label: { whiteSpace: 'nowrap' } }}
+      />
+
+      <NavLink
+        component={Link}
+        to="/risks"
+        label="Risks"
+        leftSection={<IconShield size={18} />}
+        active={isIn('/risks')}
+        variant="light"
+        styles={{ root: { borderRadius: 8 }, label: { whiteSpace: 'nowrap' } }}
+      />
+
+      <NavLink
+        component={Link}
+        to="/controls"
+        label="Controls"
+        leftSection={<IconGauge size={18} />}
+        active={isIn('/controls')}
+        variant="light"
+        styles={{ root: { borderRadius: 8 }, label: { whiteSpace: 'nowrap' } }}
+      />
+
+      <NavLink
+        component={Link}
+        to="/reflect"
+        label="Reflect & Standback"
+        leftSection={<IconHelp size={18} />}
+        active={isIn('/reflect')}
+        variant="light"
+        styles={{ root: { borderRadius: 8 }, label: { whiteSpace: 'nowrap' } }}
+      />
+
+      <NavLink
+        component={Link}
+        to="/tests"
+        label="Tests"
+        leftSection={<IconListCheck size={18} />}
+        active={isIn('/tests')}
+        variant="light"
+        styles={{ root: { borderRadius: 8 }, label: { whiteSpace: 'nowrap' } }}
+      />
+
+      <NavLink
+        component={Link}
+        to="/delivery"
+        label="Delivery"
+        leftSection={<IconStack size={18} />}
+        active={isIn('/delivery')}
+        variant="light"
+        styles={{ root: { borderRadius: 8 }, label: { whiteSpace: 'nowrap' } }}
+      />
+    </>
   )
 }

@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 
 import Layout from './components/Layout/Layout.jsx'
 import Risks from './screens/Risks/Risks.jsx'
+import TailoringQuestions from './screens/Questionnaires/TailoringQuestions.jsx'
 
 function Home() {
   return (
@@ -38,6 +39,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/risks" element={<Risks />} />
+        <Route path="/questionnaires/tailoring" element={<TailoringQuestions />} />
       </Routes>
     </BrowserRouter>
   )
