@@ -61,7 +61,10 @@ export default function Layout({ children }) {
       navbar={{
         width: navWidth,
         breakpoint: 'sm',
-        collapsed: { mobile: !mobileOpened, desktop: desktopCollapsed },
+        // Important: keep the navbar VISIBLE on desktop even when "collapsed".
+        // We implement desktop collapse as a narrow icon rail (via `navWidth`),
+        // not by hiding the navbar entirely.
+        collapsed: { mobile: !mobileOpened },
       }}
     >
       <AppShell.Header
@@ -151,9 +154,9 @@ export default function Layout({ children }) {
 
       <AppShell.Navbar p="sm">
         <ScrollArea h={`calc(100vh - ${rem(60)} - ${rem(16)})`}>
-          {/* Sidebar behavior requirements:
-              - Collapsed: icons only (no labels)
-              - Expanded: show labels and dropdown groups (e.g., Questionnaires) */}
+      {/* Sidebar behavior requirements:
+          - Collapsed (desktop): icons only (no labels)
+          - Expanded: show labels and dropdown groups (e.g., Questionnaires) */}
           {desktopCollapsed ? (
             <StackedIconRail currentPath={location.pathname} />
           ) : (
@@ -241,7 +244,7 @@ function StackedIconRail({ currentPath }) {
 
 /**
  * Expanded sidebar: show labels and dropdown groups using nested NavLinks.
- * Questionnaires matches the screenshot: dropdown > Tailoring Questions > sub-items.
+ * Questionnaires matches the screenshot: dropdown with items (Tailoring Questions is NOT a nested dropdown).
  */
 function StackedExpandedNav({ currentPath, selectedTailoringSub, isIn }) {
   return (
@@ -299,44 +302,44 @@ function StackedExpandedNav({ currentPath, selectedTailoringSub, isIn }) {
           component={Link}
           to="/questionnaires/tailoring"
           label="Tailoring Questions"
-          defaultOpened={isIn('/questionnaires/tailoring')}
-          active={isIn('/questionnaires/tailoring')}
+          active={isIn('/questionnaires/tailoring') && !selectedTailoringSub}
           variant="light"
           styles={{ root: { borderRadius: 8 } }}
-        >
-          <NavLink
-            component={Link}
-            to="/questionnaires/tailoring?sub=materiality"
-            label="Materiality"
-            active={isIn('/questionnaires/tailoring') && selectedTailoringSub === 'materiality'}
-            variant="light"
-            styles={{ root: { borderRadius: 8 } }}
-          />
-          <NavLink
-            component={Link}
-            to="/questionnaires/tailoring?sub=etd"
-            label="ETD"
-            active={isIn('/questionnaires/tailoring') && selectedTailoringSub === 'etd'}
-            variant="light"
-            styles={{ root: { borderRadius: 8 } }}
-          />
-          <NavLink
-            component={Link}
-            to="/questionnaires/tailoring?sub=lorem-1"
-            label="Lorem ipsum"
-            active={isIn('/questionnaires/tailoring') && selectedTailoringSub === 'lorem-1'}
-            variant="light"
-            styles={{ root: { borderRadius: 8 } }}
-          />
-          <NavLink
-            component={Link}
-            to="/questionnaires/tailoring?sub=lorem-2"
-            label="Lorem ipsum"
-            active={isIn('/questionnaires/tailoring') && selectedTailoringSub === 'lorem-2'}
-            variant="light"
-            styles={{ root: { borderRadius: 8 } }}
-          />
-        </NavLink>
+        />
+
+        {/* These are items of the Questionnaires dropdown (not nested under Tailoring Questions) */}
+        <NavLink
+          component={Link}
+          to="/questionnaires/tailoring?sub=materiality"
+          label="Materiality"
+          active={isIn('/questionnaires/tailoring') && selectedTailoringSub === 'materiality'}
+          variant="light"
+          styles={{ root: { borderRadius: 8 } }}
+        />
+        <NavLink
+          component={Link}
+          to="/questionnaires/tailoring?sub=etd"
+          label="ETD"
+          active={isIn('/questionnaires/tailoring') && selectedTailoringSub === 'etd'}
+          variant="light"
+          styles={{ root: { borderRadius: 8 } }}
+        />
+        <NavLink
+          component={Link}
+          to="/questionnaires/tailoring?sub=lorem-1"
+          label="Lorem ipsum"
+          active={isIn('/questionnaires/tailoring') && selectedTailoringSub === 'lorem-1'}
+          variant="light"
+          styles={{ root: { borderRadius: 8 } }}
+        />
+        <NavLink
+          component={Link}
+          to="/questionnaires/tailoring?sub=lorem-2"
+          label="Lorem ipsum"
+          active={isIn('/questionnaires/tailoring') && selectedTailoringSub === 'lorem-2'}
+          variant="light"
+          styles={{ root: { borderRadius: 8 } }}
+        />
       </NavLink>
 
       <NavLink

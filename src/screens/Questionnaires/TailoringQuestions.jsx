@@ -15,17 +15,14 @@ import {
   TextInput,
   ThemeIcon,
   Title,
-  Switch,
 } from '@mantine/core'
 import {
-  IconDotsVertical,
   IconPlus,
   IconSparkles,
   IconX,
   IconPaperclip,
   IconLayoutSidebarLeftCollapse,
 } from '@tabler/icons-react'
-import { useSearchParams } from 'react-router-dom'
 
 import Layout from '../../components/Layout/Layout.jsx'
 
@@ -36,9 +33,6 @@ import Layout from '../../components/Layout/Layout.jsx'
  * - Uses mock data/placeholders where needed
  */
 export default function TailoringQuestions() {
-  const [searchParams] = useSearchParams()
-  const selectedSub = searchParams.get('sub') ?? null
-
   const pageTitle = 'Understanding the Entity'
   const sectionTitle = 'Industry, regulatory and other external factors'
 
@@ -66,40 +60,19 @@ export default function TailoringQuestions() {
       <Container fluid>
         <Stack gap="md">
           {/* Page header row (inside the page, below global header) */}
-          <Group justify="space-between" align="flex-start">
-            <Stack gap={2}>
-              <Title order={3}>{pageTitle}</Title>
+          {/* Items labeled "(Not in scope)" in the reference are intentionally omitted here.
+              We keep only the title + tabs that frame the questionnaire content. */}
+          <Stack gap={2}>
+            <Title order={3}>{pageTitle}</Title>
 
-              {/* Tabs under the page title */}
-              <Tabs defaultValue="ute" variant="default">
-                <Tabs.List>
-                  <Tabs.Tab value="summary">Summary</Tabs.Tab>
-                  <Tabs.Tab value="ute">UTE Assessment</Tabs.Tab>
-                </Tabs.List>
-              </Tabs>
-            </Stack>
-
-            {/* Right-side controls in page header */}
-            <Group gap="sm">
-              <Group gap={8}>
-                <IconSparkles size={16} />
-                <Text size="sm" fw={600}>
-                  Coach
-                </Text>
-                <Switch size="sm" defaultChecked />
-              </Group>
-
-              <Button variant="default" size="sm">
-                Sign off
-              </Button>
-              <Button variant="filled" size="sm">
-                Save &amp; Close
-              </Button>
-              <ActionIcon variant="subtle" aria-label="More actions">
-                <IconDotsVertical size={18} />
-              </ActionIcon>
-            </Group>
-          </Group>
+            {/* Tabs under the page title */}
+            <Tabs defaultValue="ute" variant="default">
+              <Tabs.List>
+                <Tabs.Tab value="summary">Summary</Tabs.Tab>
+                <Tabs.Tab value="ute">UTE Assessment</Tabs.Tab>
+              </Tabs.List>
+            </Tabs>
+          </Stack>
 
           <Grid gutter="md" align="flex-start">
             {/* Left: in-page "SECTIONS" navigation */}
@@ -187,15 +160,6 @@ export default function TailoringQuestions() {
               </Paper>
             </Grid.Col>
           </Grid>
-
-          {/* Sidebar selection note (for future iteration): the screenshot shows the sidebar's
-              Questionnaires dropdown open with Tailoring Questions selected and sub-items.
-              We route those sub-items via `?sub=` for now. */}
-          {selectedSub ? (
-            <Text size="xs" c="dimmed">
-              Selected sub-item (mock): <b>{selectedSub}</b>
-            </Text>
-          ) : null}
         </Stack>
       </Container>
     </Layout>
