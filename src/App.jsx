@@ -1,35 +1,47 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { Button, Container, Group, Paper, Stack, Text, Title } from '@mantine/core'
+import { Link } from 'react-router-dom'
 
-function App() {
-  const [count, setCount] = useState(0)
+import Layout from './components/Layout/Layout.jsx'
+import Risks from './screens/Risks/Risks.jsx'
+import TailoringQuestions from './screens/Questionnaires/TailoringQuestions.jsx'
 
+function Home() {
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <Layout>
+      <Container size="lg">
+        <Stack gap="md">
+          <Title order={2}>This is the homepage</Title>
+          <Text c="dimmed">
+            Routing is set up with react-router-dom v6. The <code>/risks</code>{' '}
+            route is implemented as a separate screen and uses the same shared
+            layout.
+          </Text>
+
+          <Paper withBorder p="md" radius="md">
+            <Group justify="space-between">
+              <Text fw={600}>Try the Risk Details mock screen</Text>
+              <Button component={Link} to="/risks">
+                Go to /risks
+              </Button>
+            </Group>
+          </Paper>
+        </Stack>
+      </Container>
+    </Layout>
   )
 }
 
-export default App
+export default function App() {
+  return (
+    <BrowserRouter>
+      {/* Keep routing simple; add more routes later as needed */}
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/risks" element={<Risks />} />
+        <Route path="/questionnaires/tailoring" element={<TailoringQuestions />} />
+      </Routes>
+    </BrowserRouter>
+  )
+}
+
