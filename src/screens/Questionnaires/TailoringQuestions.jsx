@@ -1,12 +1,15 @@
 import {
   ActionIcon,
   Button,
+  Checkbox,
   Container,
   Divider,
   Grid,
   Group,
+  Modal,
   Paper,
   Radio,
+  ScrollArea,
   Select,
   Stack,
   Tabs,
@@ -17,12 +20,20 @@ import {
   Title,
 } from '@mantine/core'
 import {
+  IconChevronRight,
+  IconFile,
+  IconFileSpreadsheet,
+  IconLink,
   IconPlus,
+  IconSearch,
   IconSparkles,
+  IconUpload,
   IconX,
   IconPaperclip,
   IconLayoutSidebarLeftCollapse,
 } from '@tabler/icons-react'
+import { useDisclosure } from '@mantine/hooks'
+import { useMemo, useState } from 'react'
 
 import Layout from '../../components/Layout/Layout.jsx'
 
@@ -178,6 +189,9 @@ function StatusDot({ active }) {
 }
 
 function QuestionBlock({ number, text, type, helperText }) {
+  // Each question maintains its own referenced files (mock behavior).
+  const [referencedFiles, setReferencedFiles] = useState([])
+
   return (
     <Paper withBorder radius="md" p="md">
       <Stack gap="sm">
@@ -252,15 +266,14 @@ function QuestionBlock({ number, text, type, helperText }) {
           rightSectionWidth={40}
         />
 
-        {/* Reference a file (chip-like action in the screenshot) */}
-        <Button
-          variant="subtle"
-          size="xs"
-          leftSection={<IconPaperclip size={14} />}
-          styles={{ root: { justifyContent: 'flex-start', paddingLeft: 0 } }}
-        >
-          Reference a file
-        </Button>
+        {/* Reference a file:
+            - Opens a modal (per the screenshot)
+            - Supports multiple selections
+            - Shows selected file names above the "Reference a file" action */}
+        <ReferenceFiles
+          value={referencedFiles}
+          onChange={setReferencedFiles}
+        />
       </Stack>
     </Paper>
   )
@@ -319,6 +332,234 @@ function EditableRowsTable() {
           Add Row
         </Button>
       </Stack>
+    </Paper>
+  )
+}
+
+/**
+ * ReferenceFiles control:
+ * - Renders selected files as small "attachments" just before the action label
+ * - Opens a modal that matches the reference image at a layout level
+ */
+function ReferenceFiles({ value, onChange }) {
+  const [opened, { open, close }] = useDisclosure(false)
+  const [query, setQuery] = useState('')
+
+  // Modal selection is staged until "Done" is pressed (closer to real UX).
+  const [draft, setDraft] = useState(value)
+
+  const suggestedFiles = useMemo(
+    () => [
+      {
+        id: '00.01',
+        name: 'Catalyst Inc. - Balance Sheet 2025',
+        source: 'Existing document',
+        icon: IconFileSpreadsheet,
+      },
+      {
+        id: '00.02',
+        name: 'Technology Industry 2025 Report',
+        source: 'Global Portal',
+        icon: IconFile,
+      },
+      {
+        id: '00.03',
+        name: 'September 9th, 2025 Meeting Minutes',
+        source: 'Global Portal',
+        icon: IconFile,
+      },
+      {
+        id: '00.04',
+        name: 'Catalyst Inc. - Balance Sheet 2025',
+        source: 'Global Portal',
+        icon: IconFileSpreadsheet,
+      },
+    ],
+    [],
+  )
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    if (!q) return suggestedFiles
+    return suggestedFiles.filter((f) => `${f.id} ${f.name} ${f.source}`.toLowerCase().includes(q))
+  }, [query, suggestedFiles])
+
+  const toggle = (file) => {
+    setDraft((prev) => {
+      const exists = prev.some((x) => x.id === file.id && x.name === file.name && x.source === file.source)
+      if (exists) return prev.filter((x) => !(x.id === file.id && x.name === file.name && x.source === file.source))
+      return [...prev, file]
+    })
+  }
+
+  const remove = (file) => {
+    onChange(value.filter((x) => !(x.id === file.id && x.name === file.name && x.source === file.source)))
+  }
+
+  return (
+    <>
+      <Stack gap={6}>
+        {/* Selected files appear just before the action label (as in the screenshot) */}
+        {value.length > 0 ? (
+          <Stack gap={6}>
+            {value.map((f) => (
+              <Group key={`${f.id}-${f.name}-${f.source}`} gap={6} wrap="nowrap">
+                <ThemeIcon size={18} radius="xl" variant="light" color="gray">
+                  <IconPaperclip size={12} />
+                </ThemeIcon>
+                <Text size="xs" lineClamp={1} style={{ flex: 1 }}>
+                  {f.name}
+                </Text>
+                <ActionIcon
+                  variant="subtle"
+                  color="gray"
+                  size="sm"
+                  aria-label="Remove referenced file"
+                  onClick={() => remove(f)}
+                >
+                  <IconX size={14} />
+                </ActionIcon>
+              </Group>
+            ))}
+          </Stack>
+        ) : null}
+
+        <Button
+          variant="subtle"
+          size="xs"
+          leftSection={<IconPaperclip size={14} />}
+          onClick={() => {
+            setDraft(value)
+            setQuery('')
+            open()
+          }}
+          styles={{ root: { justifyContent: 'flex-start', paddingLeft: 0 } }}
+        >
+          Reference a file
+        </Button>
+      </Stack>
+
+      <Modal
+        opened={opened}
+        onClose={close}
+        size="xl"
+        radius="md"
+        centered
+        title={null}
+        overlayProps={{ opacity: 0.55, blur: 1 }}
+      >
+        <Grid gutter="md">
+          {/* Left "menu" column */}
+          <Grid.Col span={{ base: 12, md: 5 }}>
+            <Stack gap="sm">
+              <TextInput
+                value={query}
+                onChange={(e) => setQuery(e.currentTarget.value)}
+                placeholder="Search menu"
+                leftSection={<IconSearch size={16} />}
+              />
+
+              <MenuRow icon={IconLink} label="Link from existing documents" />
+              <MenuRow icon={IconChevronRight} label="Add from Global Portal" rightChevron />
+              <MenuRow icon={IconUpload} label="Upload a document" />
+            </Stack>
+          </Grid.Col>
+
+          {/* Right empty area in the reference (kept blank for parity) */}
+          <Grid.Col span={{ base: 12, md: 7 }}>
+            <Paper radius="md" withBorder={false} bg="transparent" style={{ minHeight: 120 }} />
+          </Grid.Col>
+        </Grid>
+
+        <Divider my="md" />
+
+        <Text size="xs" fw={700} c="dimmed" mb="xs">
+          SUGGESTED FILES
+        </Text>
+
+        <ScrollArea h={220}>
+          <Stack gap={6}>
+            {filtered.map((f) => {
+              const selected = draft.some((x) => x.id === f.id && x.name === f.name && x.source === f.source)
+              const Icon = f.icon
+              return (
+                <Paper
+                  key={`${f.id}-${f.name}-${f.source}`}
+                  withBorder
+                  radius="md"
+                  p="sm"
+                  onClick={() => toggle(f)}
+                  style={{
+                    cursor: 'pointer',
+                    background: selected ? 'var(--mantine-color-gray-0)' : undefined,
+                  }}
+                >
+                  <Group justify="space-between" wrap="nowrap">
+                    <Group gap="sm" wrap="nowrap">
+                      <Checkbox checked={selected} readOnly />
+                      <ThemeIcon size={26} radius="sm" variant="light" color="green">
+                        <Icon size={16} />
+                      </ThemeIcon>
+                      <Group gap={8} wrap="nowrap">
+                        <Text size="sm" fw={700}>
+                          {f.id}
+                        </Text>
+                        <Text size="sm" lineClamp={1}>
+                          {f.name}
+                        </Text>
+                      </Group>
+                    </Group>
+
+                    <Text size="sm" c="dimmed">
+                      {f.source}
+                    </Text>
+                  </Group>
+                </Paper>
+              )
+            })}
+          </Stack>
+        </ScrollArea>
+
+        <Group justify="flex-end" mt="md">
+          <Button
+            variant="default"
+            onClick={() => {
+              setDraft(value)
+              close()
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={() => {
+              onChange(draft)
+              close()
+            }}
+          >
+            Done
+          </Button>
+        </Group>
+      </Modal>
+    </>
+  )
+}
+
+function MenuRow({ icon: Icon, label, rightChevron = false }) {
+  return (
+    <Paper withBorder radius="md" p="sm">
+      <Group justify="space-between" wrap="nowrap">
+        <Group gap="sm" wrap="nowrap">
+          <ThemeIcon size={26} radius="sm" variant="light" color="gray">
+            <Icon size={16} />
+          </ThemeIcon>
+          <Text size="sm">{label}</Text>
+        </Group>
+        {rightChevron ? (
+          <ThemeIcon size={18} radius="xl" variant="subtle" color="gray">
+            <IconChevronRight size={14} />
+          </ThemeIcon>
+        ) : null}
+      </Group>
     </Paper>
   )
 }
