@@ -39,7 +39,7 @@ import {
   IconLayoutSidebarLeftExpand,
 } from '@tabler/icons-react'
 import { useDisclosure } from '@mantine/hooks'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import Layout from '../../components/Layout/Layout.jsx'
 
@@ -76,11 +76,6 @@ export default function TailoringQuestions() {
       status: 'todo',
     },
   ]
-
-  useEffect(() => {
-    // Requirement: collapse "SECTIONS" when the ALRMM question panel is shown.
-    if (sidePanelOpen) setSectionsCollapsed(true)
-  }, [sidePanelOpen])
 
   const leftSpan = sectionsCollapsed ? 1 : 3
   const rightSpan = sidePanelOpen ? 4 : 0
@@ -177,7 +172,8 @@ export default function TailoringQuestions() {
                     text="What is your understanding of the industry/market factors affecting the entity?"
                     type="comment"
                     onSelectAddAction={(action) => {
-                      if (action === 'ALRMM')
+                      if (action === 'ALRMM') {
+                        setSectionsCollapsed(true)
                         setSidePanel({
                           type: 'ALRMM',
                           question: {
@@ -185,6 +181,7 @@ export default function TailoringQuestions() {
                             text: 'What is your understanding of the industry/market factors affecting the entity?',
                           },
                         })
+                      }
                     }}
                   />
                   <QuestionBlock
@@ -192,11 +189,13 @@ export default function TailoringQuestions() {
                     text="What legal and regulatory rules apply to this client?"
                     type="yesno"
                     onSelectAddAction={(action) => {
-                      if (action === 'ALRMM')
+                      if (action === 'ALRMM') {
+                        setSectionsCollapsed(true)
                         setSidePanel({
                           type: 'ALRMM',
                           question: { number: '3.2', text: 'What legal and regulatory rules apply to this client?' },
                         })
+                      }
                     }}
                   />
                   <QuestionBlock
@@ -204,7 +203,8 @@ export default function TailoringQuestions() {
                     text="Are there any laws or regulations that directly affect the numbers or disclosures?"
                     type="table"
                     onSelectAddAction={(action) => {
-                      if (action === 'ALRMM')
+                      if (action === 'ALRMM') {
+                        setSectionsCollapsed(true)
                         setSidePanel({
                           type: 'ALRMM',
                           question: {
@@ -212,6 +212,7 @@ export default function TailoringQuestions() {
                             text: 'Are there any laws or regulations that directly affect the numbers or disclosures?',
                           },
                         })
+                      }
                     }}
                   />
                   <QuestionBlock
@@ -219,7 +220,8 @@ export default function TailoringQuestions() {
                     text="Are there laws or regulations that could impact the financials through penalties or fines?"
                     type="comment"
                     onSelectAddAction={(action) => {
-                      if (action === 'ALRMM')
+                      if (action === 'ALRMM') {
+                        setSectionsCollapsed(true)
                         setSidePanel({
                           type: 'ALRMM',
                           question: {
@@ -227,6 +229,7 @@ export default function TailoringQuestions() {
                             text: 'Are there laws or regulations that could impact the financials through penalties or fines?',
                           },
                         })
+                      }
                     }}
                   />
                   <QuestionBlock
@@ -234,7 +237,8 @@ export default function TailoringQuestions() {
                     text="Is there any suspected non-compliance with laws or regulations?"
                     type="yesno"
                     onSelectAddAction={(action) => {
-                      if (action === 'ALRMM')
+                      if (action === 'ALRMM') {
+                        setSectionsCollapsed(true)
                         setSidePanel({
                           type: 'ALRMM',
                           question: {
@@ -242,6 +246,7 @@ export default function TailoringQuestions() {
                             text: 'Is there any suspected non-compliance with laws or regulations?',
                           },
                         })
+                      }
                     }}
                   />
                   <QuestionBlock
@@ -252,11 +257,13 @@ export default function TailoringQuestions() {
                       'Describe your understanding of the nature of the entity’s operations, including business risks faced by the entity. For example:\n• Revenue sources;\n• Products or services;\n• Conduct of operations (e.g. methods of production, outsourcing, etc.);\n• Customers and markets;\n• Involvement in electronic commerce/ internet sales or purchases;\n• Research and development activities; and\n• Any new developments in these areas.'
                     }
                     onSelectAddAction={(action) => {
-                      if (action === 'ALRMM')
+                      if (action === 'ALRMM') {
+                        setSectionsCollapsed(true)
                         setSidePanel({
                           type: 'ALRMM',
                           question: { number: '3.6', text: "Understanding of the entity's operations" },
                         })
+                      }
                     }}
                   />
                 </Stack>
