@@ -3,7 +3,7 @@ import { Button, Container, Group, Paper, Stack, Text, Title } from '@mantine/co
 import { Link } from 'react-router-dom'
 
 import Layout from './components/Layout/Layout.jsx'
-import Risks from './screens/Risks/Risks.jsx'
+import Risks, { RiskDetails } from './screens/Risks/Risks.jsx'
 import TailoringQuestions from './screens/Questionnaires/TailoringQuestions.jsx'
 
 function Home() {
@@ -14,13 +14,12 @@ function Home() {
           <Title order={2}>This is the homepage</Title>
           <Text c="dimmed">
             Routing is set up with react-router-dom v6. The <code>/risks</code>{' '}
-            route is implemented as a separate screen and uses the same shared
-            layout.
+            route opens the Risk Hub and uses the same shared layout.
           </Text>
 
           <Paper withBorder p="md" radius="md">
             <Group justify="space-between">
-              <Text fw={600}>Try the Risk Details mock screen</Text>
+              <Text fw={600}>Open the Risk Hub</Text>
               <Button component={Link} to="/risks">
                 Go to /risks
               </Button>
@@ -39,6 +38,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/risks" element={<Risks />} />
+        <Route path="/risks/:riskId" element={<RiskDetails />} />
         <Route path="/questionnaires/tailoring" element={<TailoringQuestions />} />
       </Routes>
     </BrowserRouter>
