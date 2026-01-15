@@ -1,17 +1,21 @@
 import {
   ActionIcon,
+  Box,
   Button,
   Checkbox,
   Container,
   Divider,
   Grid,
   Group,
+  Menu,
+  MultiSelect,
   Modal,
   Paper,
   Radio,
   ScrollArea,
   Select,
   Stack,
+  Table,
   Tabs,
   Text,
   Textarea,
@@ -27,13 +31,15 @@ import {
   IconPlus,
   IconSearch,
   IconSparkles,
+  IconTrash,
   IconUpload,
   IconX,
   IconPaperclip,
   IconLayoutSidebarLeftCollapse,
+  IconLayoutSidebarLeftExpand,
 } from '@tabler/icons-react'
 import { useDisclosure } from '@mantine/hooks'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import Layout from '../../components/Layout/Layout.jsx'
 
@@ -46,6 +52,11 @@ import Layout from '../../components/Layout/Layout.jsx'
 export default function TailoringQuestions() {
   const pageTitle = 'Understanding the Entity'
   const sectionTitle = 'Industry, regulatory and other external factors'
+
+  const [sidePanel, setSidePanel] = useState(null) // { type: 'ALRMM', question: { number, text } }
+  const sidePanelOpen = Boolean(sidePanel)
+
+  const [sectionsCollapsed, setSectionsCollapsed] = useState(false)
 
   // Left in-page sections list (inside the main content area), per reference.
   const sections = [
@@ -65,6 +76,15 @@ export default function TailoringQuestions() {
       status: 'todo',
     },
   ]
+
+  useEffect(() => {
+    // Requirement: collapse "SECTIONS" when the ALRMM question panel is shown.
+    if (sidePanelOpen) setSectionsCollapsed(true)
+  }, [sidePanelOpen])
+
+  const leftSpan = sectionsCollapsed ? 1 : 3
+  const rightSpan = sidePanelOpen ? 4 : 0
+  const mainSpan = sidePanelOpen ? (sectionsCollapsed ? 7 : 5) : 12 - leftSpan
 
   return (
     <Layout>
@@ -87,40 +107,58 @@ export default function TailoringQuestions() {
 
           <Grid gutter="md" align="flex-start">
             {/* Left: in-page "SECTIONS" navigation */}
-            <Grid.Col span={{ base: 12, md: 3 }}>
-              <Paper withBorder radius="md" p="sm">
-                <Group justify="space-between" mb="xs">
-                  <Text size="xs" fw={700} c="dimmed">
-                    SECTIONS
-                  </Text>
-                  <ActionIcon variant="subtle" aria-label="Collapse sections">
-                    <IconLayoutSidebarLeftCollapse size={16} />
-                  </ActionIcon>
-                </Group>
-
-                <Stack gap={6}>
-                  {sections.map((s) => (
-                    <Paper
-                      key={s.id}
-                      withBorder={false}
-                      radius="sm"
-                      p="xs"
-                      bg={s.status === 'active' ? 'gray.1' : undefined}
+            <Grid.Col span={{ base: 12, md: leftSpan }}>
+              {sectionsCollapsed ? (
+                <Paper withBorder radius="md" p="xs">
+                  <Group justify="center">
+                    <ActionIcon
+                      variant="subtle"
+                      aria-label="Expand sections"
+                      onClick={() => setSectionsCollapsed(false)}
                     >
-                      <Group justify="space-between" align="center" gap="sm" wrap="nowrap">
-                        <Text size="xs" lineClamp={2}>
-                          {s.label}
-                        </Text>
-                        <StatusDot active={s.status === 'active'} />
-                      </Group>
-                    </Paper>
-                  ))}
-                </Stack>
-              </Paper>
+                      <IconLayoutSidebarLeftExpand size={16} />
+                    </ActionIcon>
+                  </Group>
+                </Paper>
+              ) : (
+                <Paper withBorder radius="md" p="sm">
+                  <Group justify="space-between" mb="xs">
+                    <Text size="xs" fw={700} c="dimmed">
+                      SECTIONS
+                    </Text>
+                    <ActionIcon
+                      variant="subtle"
+                      aria-label="Collapse sections"
+                      onClick={() => setSectionsCollapsed(true)}
+                    >
+                      <IconLayoutSidebarLeftCollapse size={16} />
+                    </ActionIcon>
+                  </Group>
+
+                  <Stack gap={6}>
+                    {sections.map((s) => (
+                      <Paper
+                        key={s.id}
+                        withBorder={false}
+                        radius="sm"
+                        p="xs"
+                        bg={s.status === 'active' ? 'gray.1' : undefined}
+                      >
+                        <Group justify="space-between" align="center" gap="sm" wrap="nowrap">
+                          <Text size="xs" lineClamp={2}>
+                            {s.label}
+                          </Text>
+                          <StatusDot active={s.status === 'active'} />
+                        </Group>
+                      </Paper>
+                    ))}
+                  </Stack>
+                </Paper>
+              )}
             </Grid.Col>
 
             {/* Right: main questionnaire content */}
-            <Grid.Col span={{ base: 12, md: 9 }}>
+            <Grid.Col span={{ base: 12, md: mainSpan }}>
               <Paper withBorder radius="md" p="md">
                 {/* Section header block */}
                 <Paper radius="md" p="md" bg="gray.0" withBorder={false}>
@@ -138,26 +176,73 @@ export default function TailoringQuestions() {
                     number="3.1"
                     text="What is your understanding of the industry/market factors affecting the entity?"
                     type="comment"
+                    onSelectAddAction={(action) => {
+                      if (action === 'ALRMM')
+                        setSidePanel({
+                          type: 'ALRMM',
+                          question: {
+                            number: '3.1',
+                            text: 'What is your understanding of the industry/market factors affecting the entity?',
+                          },
+                        })
+                    }}
                   />
                   <QuestionBlock
                     number="3.2"
                     text="What legal and regulatory rules apply to this client?"
                     type="yesno"
+                    onSelectAddAction={(action) => {
+                      if (action === 'ALRMM')
+                        setSidePanel({
+                          type: 'ALRMM',
+                          question: { number: '3.2', text: 'What legal and regulatory rules apply to this client?' },
+                        })
+                    }}
                   />
                   <QuestionBlock
                     number="3.3"
                     text="Are there any laws or regulations that directly affect the numbers or disclosures?"
                     type="table"
+                    onSelectAddAction={(action) => {
+                      if (action === 'ALRMM')
+                        setSidePanel({
+                          type: 'ALRMM',
+                          question: {
+                            number: '3.3',
+                            text: 'Are there any laws or regulations that directly affect the numbers or disclosures?',
+                          },
+                        })
+                    }}
                   />
                   <QuestionBlock
                     number="3.4"
                     text="Are there laws or regulations that could impact the financials through penalties or fines?"
                     type="comment"
+                    onSelectAddAction={(action) => {
+                      if (action === 'ALRMM')
+                        setSidePanel({
+                          type: 'ALRMM',
+                          question: {
+                            number: '3.4',
+                            text: 'Are there laws or regulations that could impact the financials through penalties or fines?',
+                          },
+                        })
+                    }}
                   />
                   <QuestionBlock
                     number="3.5"
                     text="Is there any suspected non-compliance with laws or regulations?"
                     type="yesno"
+                    onSelectAddAction={(action) => {
+                      if (action === 'ALRMM')
+                        setSidePanel({
+                          type: 'ALRMM',
+                          question: {
+                            number: '3.5',
+                            text: 'Is there any suspected non-compliance with laws or regulations?',
+                          },
+                        })
+                    }}
                   />
                   <QuestionBlock
                     number="3.6"
@@ -166,10 +251,27 @@ export default function TailoringQuestions() {
                     helperText={
                       'Describe your understanding of the nature of the entity’s operations, including business risks faced by the entity. For example:\n• Revenue sources;\n• Products or services;\n• Conduct of operations (e.g. methods of production, outsourcing, etc.);\n• Customers and markets;\n• Involvement in electronic commerce/ internet sales or purchases;\n• Research and development activities; and\n• Any new developments in these areas.'
                     }
+                    onSelectAddAction={(action) => {
+                      if (action === 'ALRMM')
+                        setSidePanel({
+                          type: 'ALRMM',
+                          question: { number: '3.6', text: "Understanding of the entity's operations" },
+                        })
+                    }}
                   />
                 </Stack>
               </Paper>
             </Grid.Col>
+
+            {/* Right: Add ALRMM panel */}
+            {sidePanelOpen ? (
+              <Grid.Col span={{ base: 12, md: rightSpan }}>
+                <AddAlrmmPanel
+                  question={sidePanel?.question}
+                  onClose={() => setSidePanel(null)}
+                />
+              </Grid.Col>
+            ) : null}
           </Grid>
         </Stack>
       </Container>
@@ -188,7 +290,7 @@ function StatusDot({ active }) {
   )
 }
 
-function QuestionBlock({ number, text, type, helperText }) {
+function QuestionBlock({ number, text, type, helperText, onSelectAddAction }) {
   // Each question maintains its own referenced files (mock behavior).
   const [referencedFiles, setReferencedFiles] = useState([])
 
@@ -215,9 +317,20 @@ function QuestionBlock({ number, text, type, helperText }) {
             <ActionIcon variant="subtle" aria-label="Insights">
               <IconSparkles size={16} />
             </ActionIcon>
-            <ActionIcon variant="subtle" aria-label="Add">
-              <IconPlus size={16} />
-            </ActionIcon>
+            <Menu withinPortal position="bottom-end" shadow="md">
+              <Menu.Target>
+                <ActionIcon variant="subtle" aria-label="Add">
+                  <IconPlus size={16} />
+                </ActionIcon>
+              </Menu.Target>
+              <Menu.Dropdown>
+                <Menu.Item onClick={() => onSelectAddAction?.('CONTROL')}>Add Control</Menu.Item>
+                <Menu.Label>Add RMM</Menu.Label>
+                <Menu.Item onClick={() => onSelectAddAction?.('ALRMM')}>ALRMM</Menu.Item>
+                <Menu.Item onClick={() => onSelectAddAction?.('FSLR')}>FSLR</Menu.Item>
+                <Menu.Item onClick={() => onSelectAddAction?.('RAFIT')}>RAFIT</Menu.Item>
+              </Menu.Dropdown>
+            </Menu>
           </Group>
         </Group>
 
@@ -331,6 +444,216 @@ function EditableRowsTable() {
         <Button variant="subtle" size="xs" leftSection={<IconPlus size={14} />}>
           Add Row
         </Button>
+      </Stack>
+    </Paper>
+  )
+}
+
+function AddAlrmmPanel({ question, onClose }) {
+  const [title, setTitle] = useState('Business combination disclosures')
+  const [riskClassifications, setRiskClassifications] = useState([
+    'Fraud',
+    'Unusual transactions',
+    'Related parties',
+  ])
+  const [description, setDescription] = useState(
+    'Recent high-value acquisitions in new markets bring challenges with accurately valuing unfamiliar assets. Additionally, some acquisitions include contingent liabilities, such as unresolved legal and regulatory issues, which may be difficult to disclose or value properly.',
+  )
+  const [businessProcesses, setBusinessProcesses] = useState([])
+
+  const [fsaRows, setFsaRows] = useState([
+    { id: 1, fsa: 'A1 - Intangibles', active: ['A'] },
+    { id: 2, fsa: 'L - Consolidation', active: ['A'] },
+    { id: 3, fsa: 'B - Investments', active: ['A'] },
+  ])
+
+  const assertionLetters = ['C', 'E', 'A', 'V', 'P']
+
+  const toggleAssertion = (rowId, letter) => {
+    setFsaRows((prev) =>
+      prev.map((r) => {
+        if (r.id !== rowId) return r
+        const has = r.active.includes(letter)
+        const active = has ? r.active.filter((x) => x !== letter) : [...r.active, letter]
+        return { ...r, active }
+      }),
+    )
+  }
+
+  const removeFsa = (rowId) => setFsaRows((prev) => prev.filter((r) => r.id !== rowId))
+
+  const addFsa = () => {
+    setFsaRows((prev) => {
+      const nextId = prev.length ? Math.max(...prev.map((r) => r.id)) + 1 : 1
+      return [...prev, { id: nextId, fsa: '', active: ['A'] }]
+    })
+  }
+
+  return (
+    <Paper withBorder radius="md" p="md">
+      <Stack gap="md">
+        <Group justify="space-between" align="flex-start" wrap="nowrap">
+          <Stack gap={2} style={{ flex: 1 }}>
+            <Title order={4}>Add ALRMM</Title>
+            {question ? (
+              <Text size="xs" c="dimmed" lineClamp={2}>
+                For question {question.number}: {question.text}
+              </Text>
+            ) : null}
+          </Stack>
+          <ActionIcon variant="subtle" aria-label="Close" onClick={onClose}>
+            <IconX size={18} />
+          </ActionIcon>
+        </Group>
+
+        <Select
+          label="Title"
+          withAsterisk
+          value={title}
+          onChange={(v) => setTitle(v ?? '')}
+          data={[
+            'Business combination disclosures',
+            'Revenue recognition',
+            'Inventory valuation',
+            'Related party transactions',
+          ]}
+        />
+
+        <MultiSelect
+          label="Risk classifications"
+          value={riskClassifications}
+          onChange={setRiskClassifications}
+          data={['Fraud', 'Unusual transactions', 'Related parties', 'Estimates', 'Significant']}
+          searchable
+          clearable
+        />
+
+        <Textarea
+          label="Description"
+          withAsterisk
+          value={description}
+          onChange={(e) => setDescription(e.currentTarget.value)}
+          autosize
+          minRows={4}
+        />
+
+        <Stack gap={6}>
+          <Text size="sm" fw={700}>
+            FSA Relationships
+          </Text>
+
+          <Paper withBorder radius="md" p="sm">
+            <Table withTableBorder withColumnBorders highlightOnHover>
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th>FSA</Table.Th>
+                  <Table.Th>Assertions</Table.Th>
+                  <Table.Th style={{ width: 40 }} />
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>
+                {fsaRows.map((row) => (
+                  <Table.Tr key={row.id}>
+                    <Table.Td>
+                      <Select
+                        placeholder="Select FSA"
+                        value={row.fsa || null}
+                        onChange={(v) =>
+                          setFsaRows((prev) =>
+                            prev.map((r) => (r.id === row.id ? { ...r, fsa: v ?? '' } : r)),
+                          )
+                        }
+                        data={[
+                          'A1 - Intangibles',
+                          'L - Consolidation',
+                          'B - Investments',
+                          'R - Revenue',
+                          'E - Expenses',
+                        ]}
+                        searchable
+                        clearable
+                        size="xs"
+                      />
+                    </Table.Td>
+                    <Table.Td>
+                      <Group gap={6} wrap="nowrap">
+                        {assertionLetters.map((l) => {
+                          const isActive = row.active.includes(l)
+                          return (
+                            <ThemeIcon
+                              key={l}
+                              size={22}
+                              radius="xl"
+                              color={isActive ? 'blue' : 'gray'}
+                              variant={isActive ? 'filled' : 'light'}
+                              style={{ cursor: 'pointer' }}
+                              onClick={() => toggleAssertion(row.id, l)}
+                            >
+                              <Text size="xs" fw={800}>
+                                {l}
+                              </Text>
+                            </ThemeIcon>
+                          )
+                        })}
+                      </Group>
+                    </Table.Td>
+                    <Table.Td>
+                      <ActionIcon
+                        variant="subtle"
+                        color="gray"
+                        aria-label="Remove FSA"
+                        onClick={() => removeFsa(row.id)}
+                      >
+                        <IconTrash size={16} />
+                      </ActionIcon>
+                    </Table.Td>
+                  </Table.Tr>
+                ))}
+              </Table.Tbody>
+            </Table>
+
+            <Button
+              variant="subtle"
+              size="xs"
+              leftSection={<IconPlus size={14} />}
+              mt="sm"
+              onClick={addFsa}
+            >
+              Add FSA
+            </Button>
+          </Paper>
+        </Stack>
+
+        <Box>
+          <MultiSelect
+            label="Business Processes"
+            value={businessProcesses}
+            onChange={setBusinessProcesses}
+            data={[
+              'Revenue / Order-to-Cash (O2C)',
+              'Procure-to-Pay (P2P)',
+              'Record-to-Report (R2R)',
+              'Hire-to-Retire (H2R)',
+            ]}
+            searchable
+            clearable
+            placeholder="Select business processes"
+          />
+        </Box>
+
+        <Divider />
+
+        <Group justify="space-between">
+          <Button variant="subtle" color="red" onClick={onClose}>
+            Cancel
+          </Button>
+          <Group gap="sm">
+            <Button variant="default" onClick={onClose}>
+              Add &amp; View Risk
+            </Button>
+            <Button onClick={onClose}>Add Risk</Button>
+          </Group>
+        </Group>
       </Stack>
     </Paper>
   )
