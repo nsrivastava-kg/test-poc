@@ -31,6 +31,8 @@ import {
   IconUsers,
 } from '@tabler/icons-react'
 
+import { mockRisks } from '../../data/risks.js'
+
 /**
  * Reusable application layout:
  * - Collapsible sidebar (Mantine AppShell.Navbar)
@@ -353,14 +355,37 @@ function StackedExpandedNav({ currentPath, selectedTailoringSub, isIn }) {
       />
 
       <NavLink
-        component={Link}
-        to="/risks"
         label="Risks"
         leftSection={<IconShield size={18} />}
+        defaultOpened={isIn('/risks')}
         active={isIn('/risks')}
         variant="light"
         styles={{ root: { borderRadius: 8 }, label: { whiteSpace: 'nowrap' } }}
-      />
+      >
+        <NavLink
+          component={Link}
+          to="/risks"
+          label="Risk Hub"
+          active={currentPath === '/risks'}
+          variant="light"
+          styles={{ root: { borderRadius: 8 } }}
+        />
+
+        {mockRisks.slice(0, 8).map((r) => {
+          const to = `/risks/${encodeURIComponent(r.id)}`
+          return (
+            <NavLink
+              key={r.id}
+              component={Link}
+              to={to}
+              label={`${r.id} - ${r.title}`}
+              active={currentPath === to}
+              variant="light"
+              styles={{ root: { borderRadius: 8 } }}
+            />
+          )
+        })}
+      </NavLink>
 
       <NavLink
         component={Link}
